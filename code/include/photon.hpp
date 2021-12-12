@@ -1,7 +1,7 @@
 #ifndef PHOTON_H
 #define PHOTON_H
 
-#include <vector3f.h>
+#include <vecmath.h>
 
 struct Photon {
     Vector3f pos;
