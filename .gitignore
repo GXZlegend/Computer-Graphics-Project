@@ -1,6 +1,11 @@
+requirement.pdf
+
 code/.vscode/
 code/bin
 code/build
+code/deps/vecmath/CMakeFiles
+code/deps/vecmath/cmake_install.cmake
+code/deps/vecmath/Makefile
 code/output
 
 # Prerequisites
