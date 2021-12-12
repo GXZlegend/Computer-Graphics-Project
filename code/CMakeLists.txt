@@ -26,6 +26,7 @@ SET(PJ_INCLUDES
         include/material.hpp
         include/mesh.hpp
         include/object3d.hpp
+        include/photon.hpp
         include/plane.hpp
         include/ppm.hpp
         include/ray.hpp

@@ -6,12 +6,7 @@
 #include "ray.hpp"
 #include "hit.hpp"
 #include "material.hpp"
-
-struct Photon {
-    Vector3f pos;
-    Vector3f dir;
-    Vector3f color;
-};
+#include "photon.hpp"
 
 class PhotonKDTree {
 public:
