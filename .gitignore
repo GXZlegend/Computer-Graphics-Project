@@ -1,3 +1,8 @@
+code/.vscode/
+code/bin
+code/build
+code/output
+
 # Prerequisites
 *.d
 
