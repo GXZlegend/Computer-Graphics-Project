@@ -30,7 +30,6 @@ public:
     }
 
     bool intersect(const Ray &r, Hit &h, float tmin) override {
-        // (PA3 optional TODO): implement this for the ray-tracing routine using G-N iteration.
         bool flag = false;
         std::pair<float, float> range = pCurve->getRange();
         for (int sampleId = 0; sampleId <= N_SAMPLE; ++sampleId) {

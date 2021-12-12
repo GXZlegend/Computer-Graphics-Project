@@ -5,7 +5,6 @@
 #include <vecmath.h>
 #include <cmath>
 
-// TODO: Implement Plane representing an infinite plane
 // function: ax+by+cz=d
 // choose your representation , add more fields and fill in the functions
 

@@ -8,9 +8,6 @@
 
 #include <algorithm>
 
-// TODO (PA3): Implement Bernstein class to compute spline basis function.
-//       You may refer to the python-script for implementation.
-
 // The CurvePoint object stores information about a point on a curve
 // after it has been tesselated: the vertex (V) and the tangent (T)
 // It is the responsiblility of functions that create these objects to fill in all the data.
@@ -70,7 +67,6 @@ public:
 
     void discretize(int resolution, std::vector<CurvePoint>& data) override {
         data.clear();
-        // TODO (PA3): fill in data vector
         for (int sampleId = 0; sampleId < resolution; ++sampleId) {
             float t = 1.0 / resolution * sampleId;
             CurvePoint sample = getCurvePoint(t);
@@ -136,7 +132,6 @@ public:
 
     void discretize(int resolution, std::vector<CurvePoint>& data) override {
         data.clear();
-        // TODO (PA3): fill in data vector
         int n = (int) controls.size();
         for (int intervalId = k; intervalId < n; ++intervalId) {
             for (int sampleId = 0; sampleId < resolution; ++sampleId) {
