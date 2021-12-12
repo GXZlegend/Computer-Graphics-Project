@@ -32,6 +32,7 @@ SET(PJ_INCLUDES
         include/revsurface.hpp
         include/scene_parser.hpp
         include/sphere.hpp
+        include/tracer.hpp
         include/transform.hpp
         include/triangle.hpp
         )
