@@ -1,5 +1,7 @@
 requirement.pdf
 
+.vscode
+build
 code/.vscode/
 code/bin
 code/build
