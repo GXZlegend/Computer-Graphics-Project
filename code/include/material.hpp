@@ -38,8 +38,7 @@ public:
     Vector3f diffuseColor;
     Vector3f specularColor;
     float shininess;
-    Vector3f diffuseRatio;
-    Vector3f specularRatio;
+    float specularRatio;
     float refraction;
 };
 

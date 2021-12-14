@@ -9,10 +9,8 @@ ADD_SUBDIRECTORY(deps/vecmath)
 
 SET(PJ_SOURCES
         src/image.cpp
-        src/kdtree.cpp
         src/main.cpp
         src/mesh.cpp
-        src/ppm.cpp
         src/scene_parser.cpp)
 
 SET(PJ_INCLUDES

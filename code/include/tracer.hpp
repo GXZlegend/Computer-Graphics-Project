@@ -12,7 +12,6 @@
 
 float minTime = 1e-2;
 float minPower = 1e-2;
-int maxDepth = 5;
 
 struct Trace {
     Photon photon;
@@ -21,13 +20,13 @@ struct Trace {
 };
 
 void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<Trace> &data) {
-    if (depth <= maxDepth) {
+    if (depth > 0) {
         Hit h;
         bool flag = o->intersect(r, h, minTime);
         if (flag) {
             Vector3f Ori = r.pointAtParameter(h.getT());
-            Vector3f diffusePower = power * h.getMaterial()->diffuseRatio;
             Vector3f specularPower = power * h.getMaterial()->specularRatio;
+            Vector3f diffusePower = power - specularPower;
             if (diffusePower.length() > minPower) {
                 Trace t;
                 t.photon.pos = Ori;
