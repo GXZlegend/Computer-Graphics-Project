@@ -11,11 +11,9 @@
 #include "camera.hpp"
 #include "group.hpp"
 #include "light.hpp"
-#include "triangle.hpp"
+#include "ppm.hpp"
 
 #include <string>
-
-using namespace std;
 
 int main(int argc, char *argv[]) {
     for (int argNum = 1; argNum < argc; ++argNum) {
@@ -23,11 +21,11 @@ int main(int argc, char *argv[]) {
     }
 
     if (argc != 3) {
-        cout << "Usage: ./bin/PJ <input scene file> <output bmp file>" << endl;
+        std::cout << "Usage: ./bin/PJ <input scene file> <output bmp file>" << std::endl;
         return 1;
     }
-    string inputFile = argv[1];
-    string outputFile = argv[2];  // only bmp is allowed.
+    std::string inputFile = argv[1];
+    std::string outputFile = argv[2];  // only bmp is allowed.
 
     // First, parse the scene using SceneParser.
     // Then loop over each pixel in the image, shooting a ray
@@ -37,33 +35,40 @@ int main(int argc, char *argv[]) {
     SceneParser sceneparser(inputFile.c_str());
     Camera* camera = sceneparser.getCamera();
     Group* baseGroup = sceneparser.getGroup();
-    KDTree *KDTreeRoot = new KDTree;
-    std::vector<Box> groupBox;
-    baseGroup->getBoxes(groupBox);
-    KDTreeRoot->buildKDTree(groupBox, (int) (8 + 1.3 * log((float) groupBox.size())), 0);
-    // KDTreeRoot->buildKDTree(groupBox, 0, 0);
-    Image img(camera->getWidth(), camera->getHeight());
-    for (int x = 0; x < camera->getWidth(); ++x) {
-        for (int y = 0; y < camera->getHeight(); ++y) {
-            Ray camRay = camera->generateRay(Vector2f(1.0 * x, 1.0 * y));
-            Hit hit;
-            bool intersect = baseGroup->intersect(camRay, hit, 0);
-            if (intersect) {
-                Vector3f finalColor = Vector3f::ZERO;
-                for (int li = 0; li < sceneparser.getNumLights(); ++li) {
-                    Light* light = sceneparser.getLight(li);
-                    Vector3f L, lightColor;
-                    light->getIllumination(camRay.pointAtParameter(hit.getT()), L, lightColor);
-                    finalColor += hit.getMaterial()->Shade(camRay, hit, L, lightColor);
-                }
-                img.SetPixel(x, y, finalColor);
-            }
-            else
-                img.SetPixel(x, y, sceneparser.getBackgroundColor());
-        }
+
+    // Build KDTree
+    // KDTree *KDTreeRoot = new KDTree;
+    // std::vector<Box> groupBox;
+    // baseGroup->getBoxes(groupBox);
+    // KDTreeRoot->buildKDTree(groupBox, (int) (8 + 1.3 * log((float) groupBox.size())), 0);
+
+    // Save all lights
+    std::vector<Light *> lights;
+    for (int li = 0; li < sceneparser.getNumLights(); ++li) {
+        lights.push_back(sceneparser.getLight(li));
     }
-    img.SaveImage(outputFile.c_str());
-    cout << "Hello! Computer Graphics!" << endl;
+
+    // Set image
+    Image img(camera->getWidth(), camera->getHeight());
+
+    // Initialize viewpoints
+    std::cout << "Processing backward pass of PPM" << std::endl;
+    std::vector<std::vector<viewPoint>> imgView;
+    ppmBackward(baseGroup, camera, 10, imgView);
+
+    // Processive Photon Mapping
+
+    for (int passId = 1; passId <= 100; ++passId) {
+        std::cout << "Processing forward pass " << passId << std::endl;
+        ppmForward(baseGroup, lights, 1000000, imgView);
+        for (int x = 0; x < camera->getWidth(); ++x) {
+            for (int y = 0; y < camera->getHeight(); ++y) {
+                int offset = x * camera->getHeight() + y;
+                img.SetPixel(x, y, getRadiance(imgView[offset]));
+            }
+        }
+        img.SaveImage((outputFile + std::to_string(passId) + ".bmp").c_str());
+    }
     return 0;
 }
 

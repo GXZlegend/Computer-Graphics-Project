@@ -87,6 +87,8 @@ void SceneParser::parseFile() {
     while (getToken(token)) {
         if (!strcmp(token, "PerspectiveCamera")) {
             parsePerspectiveCamera();
+        } else if (!strcmp(token, "LensCamera")) {
+            parseLensCamera();
         } else if (!strcmp(token, "Background")) {
             parseBackground();
         } else if (!strcmp(token, "Lights")) {
@@ -134,6 +136,41 @@ void SceneParser::parsePerspectiveCamera() {
     camera = new PerspectiveCamera(center, direction, up, width, height, angle_radians);
 }
 
+void SceneParser::parseLensCamera() {
+    char token[MAX_PARSER_TOKEN_LENGTH];
+    // read in the camera parameters
+    getToken(token);
+    assert (!strcmp(token, "{"));
+    getToken(token);
+    assert (!strcmp(token, "center"));
+    Vector3f center = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "direction"));
+    Vector3f direction = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "up"));
+    Vector3f up = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "angle"));
+    float angle_degrees = readFloat();
+    float angle_radians = DegreesToRadians(angle_degrees);
+    getToken(token);
+    assert (!strcmp(token, "width"));
+    int width = readInt();
+    getToken(token);
+    assert (!strcmp(token, "height"));
+    int height = readInt();
+    getToken(token);
+    assert (!strcmp(token, "radius"));
+    float radius = readFloat();
+    getToken(token);
+    assert (!strcmp(token, "depth"));
+    float depth = readFloat();
+    getToken(token);
+    assert (!strcmp(token, "}"));
+    camera = new LensCamera(center, direction, up, width, height, angle_radians, radius, depth);
+}
+
 void SceneParser::parseBackground() {
     char token[MAX_PARSER_TOKEN_LENGTH];
     // read in the background color
@@ -172,6 +209,8 @@ void SceneParser::parseLights() {
             lights[count] = parseDirectionalLight();
         } else if (strcmp(token, "PointLight") == 0) {
             lights[count] = parsePointLight();
+        } else if (strcmp(token, "AreaLight") == 0) {
+            lights[count] = parseAreaLight();
         } else {
             printf("Unknown token in parseLight: '%s'\n", token);
             exit(0);
@@ -211,6 +250,36 @@ Light *SceneParser::parsePointLight() {
     assert (!strcmp(token, "}"));
     return new PointLight(position, color);
 }
+
+Light *SceneParser::parseAreaLight() {
+    char token[MAX_PARSER_TOKEN_LENGTH];
+    getToken(token);
+    assert (!strcmp(token, "{"));
+    getToken(token);
+    assert (!strcmp(token, "center"));
+    Vector3f center = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "z"));
+    Vector3f z = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "x"));
+    Vector3f x = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "y"));
+    Vector3f y = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "wx"));
+    float wx = readFloat();
+    getToken(token);
+    assert (!strcmp(token, "wy"));
+    float wy = readFloat();
+    getToken(token);
+    assert (!strcmp(token, "color"));
+    Vector3f color = readVector3f();
+    getToken(token);
+    assert (!strcmp(token, "}"));
+    return new AreaLight(center, z, x, y, wx, wy, color);
+}
 // ====================================================================
 // ====================================================================
 
@@ -247,6 +316,8 @@ Material *SceneParser::parseMaterial() {
     filename[0] = 0;
     Vector3f diffuseColor(1, 1, 1), specularColor(0, 0, 0);
     float shininess = 0;
+    float specularRatio = 0;
+    float refraction = 1;
     getToken(token);
     assert (!strcmp(token, "{"));
     while (true) {
@@ -257,6 +328,10 @@ Material *SceneParser::parseMaterial() {
             specularColor = readVector3f();
         } else if (strcmp(token, "shininess") == 0) {
             shininess = readFloat();
+        } else if (strcmp(token, "specularRatio") == 0) {
+            specularRatio = readFloat();
+        } else if (strcmp(token, "refraction") == 0) {
+            refraction = readFloat();
         } else if (strcmp(token, "texture") == 0) {
             // Optional: read in texture and draw it.
             getToken(filename);
@@ -265,7 +340,7 @@ Material *SceneParser::parseMaterial() {
             break;
         }
     }
-    auto *answer = new Material(diffuseColor, specularColor, shininess);
+    auto *answer = new Material(diffuseColor, specularColor, shininess, specularRatio, refraction);
     return answer;
 }
 

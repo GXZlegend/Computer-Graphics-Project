@@ -85,7 +85,7 @@ private:
         do {
             x = 2.0 * rand() / RAND_MAX - 1;
             y = 2.0 * rand() / RAND_MAX - 1;
-        } while(x * x + y * y <= 1);
+        } while(x * x + y * y > 1);
         return Vector2f(x, y);
     }
 

@@ -11,7 +11,7 @@
 #include "photon.hpp"
 
 float minTime = 1e-2;
-float minPower = 1e-2;
+float minPower = 1e-5;
 
 struct Trace {
     Photon photon;
@@ -51,7 +51,7 @@ void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<
                     sinR = sinI * h.getMaterial()->refraction;
                     if (sinR > 1) {
                         // Total reflection
-                        traceRay(o, Ray(Ori, reflectionDir), specularPower, depth + 1, data);
+                        traceRay(o, Ray(Ori, reflectionDir), specularPower, depth - 1, data);
                     }
                 }
                 float cosR = sqrt(1 - sinR * sinR);
@@ -59,8 +59,8 @@ void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<
                 float sqrtRs = (cosI * sinR - sinI * cosR) / (cosI * sinR + sinI * cosR);
                 float sqrtRp = (cosI * cosR - sinI * sinR) / (cosI * cosR + sinI * sinR);
                 float R = (sqrtRs * sqrtRs + sqrtRp * sqrtRp) / 2, T = 1 - R;
-                traceRay(o, Ray(Ori, reflectionDir), specularPower * R, depth + 1, data);
-                traceRay(o, Ray(Ori, refractionDir), specularPower * T, depth + 1, data);
+                traceRay(o, Ray(Ori, reflectionDir), specularPower * R, depth - 1, data);
+                traceRay(o, Ray(Ori, refractionDir), specularPower * T, depth - 1, data);
             }
         }
     }

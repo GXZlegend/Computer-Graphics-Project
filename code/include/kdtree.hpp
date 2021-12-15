@@ -88,7 +88,7 @@ public:
     }
 
 private:
-    static struct KDTreePlane {
+    struct KDTreePlane {
         KDTreePlane(Box b, int _dim, int _flag) {
             v[0] = b.v[0];
             v[1] = b.v[1];

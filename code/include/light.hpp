@@ -133,7 +133,7 @@ private:
     Vector3f RandomOrigin() const {
         float x = widthX * rand() / RAND_MAX - widthX / 2;
         float y = widthY * rand() / RAND_MAX - widthY / 2;
-        return x * axisX + y * axisY;
+        return x * axisX + y * axisY + center;
     }
 
     Vector3f RandomDirection() const {
@@ -142,7 +142,7 @@ private:
             x = 2.0 * rand() / RAND_MAX - 1;
             y = 2.0 * rand() / RAND_MAX - 1;
             z = 2.0 * rand() / RAND_MAX - 1;
-        } while (x * x + y * y + z * z <= 1 && !(x == 0 && y == 0 && z == 0));
+        } while (x * x + y * y + z * z > 1 || (x == 0 && y == 0 && z == 0));
         if (z < 0) {
             z = -z;
         }
