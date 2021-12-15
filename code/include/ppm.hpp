@@ -11,7 +11,7 @@
 #include "tracer.hpp"
 
 const float ALPHA = 0.7;
-const float RADIUS = 0.5;
+const float RADIUS = 0.3;
 
 struct viewPoint {
     Vector3f radiance() {
@@ -109,7 +109,7 @@ void ppmBackward(Object3D *o, Camera *camera, int spp, std::vector<std::vector<v
             std::vector<viewPoint> view;
             for (int sppId = 0; sppId < spp; ++sppId) {
                 Ray r = camera->generateRay(Vector2f(x, y));
-                traceRay(o, r, Vector3f(1.0 / spp), 5, trace);
+                traceRay(o, r, Vector3f(1.0 / spp), 20, trace);
             }
             for (Trace &t: trace) {
                 viewPoint point;
@@ -131,12 +131,12 @@ void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector
         for (int rayId = 0; rayId < rayNum; ++rayId) {
             std::pair<Ray, Vector3f> generation = l->generate();
             Ray r = generation.first;
-            if (rayId % 100000 == 0) {
+            if (rayId % 10000 == 0) {
                 std::cout << "rayId " << rayId << std::endl;
             }
             Vector3f col = generation.second;
             std::vector<Trace> trace;
-            traceRay(o, r, col, 5, trace);
+            traceRay(o, r, col, 20, trace);
             for (Trace &t: trace) {
                 photons.push_back(t.photon);
             }
@@ -151,8 +151,11 @@ void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector
             int m = (int) photon.size();
             Vector3f power = Vector3f::ZERO;
             for (Photon &p: photon) {
-                power += point.trace.photon.power * std::abs(Vector3f::dot(point.trace.photon.dir, p.dir))
+                power += point.trace.photon.power
                        * point.trace.material->Shade(point.trace.photon.dir, p.dir, point.trace.normal, p.power);
+                if (power[0] < 0 || power[1] < 0 || power[2] < 0) {
+                    std::cout << "fuck" << std::endl;
+                }
             }
             float n_prime = point.num + point.alpha * m;
             float r_prime = point.radius;

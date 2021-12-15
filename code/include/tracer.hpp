@@ -55,10 +55,20 @@ void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<
                     }
                 }
                 float cosR = sqrt(1 - sinR * sinR);
+                cosI = std::abs(cosI);
                 Vector3f refractionDir = (r.getDirection() - proj) * sinR / sinI + proj * cosR / cosI;
                 float sqrtRs = (cosI * sinR - sinI * cosR) / (cosI * sinR + sinI * cosR);
                 float sqrtRp = (cosI * cosR - sinI * sinR) / (cosI * cosR + sinI * sinR);
                 float R = (sqrtRs * sqrtRs + sqrtRp * sqrtRp) / 2, T = 1 - R;
+                if (R < 0 || T < 0) {
+                    std::cout << "fuck" << std::endl;
+                    std::cout << cosI << std::endl;
+                    std::cout << sinI << std::endl;
+                    std::cout << cosR << std::endl;
+                    std::cout << sinR << std::endl;
+                    std::cout << sqrtRs << std::endl;
+                    std::cout << sqrtRp << std::endl;
+                }
                 traceRay(o, Ray(Ori, reflectionDir), specularPower * R, depth - 1, data);
                 traceRay(o, Ray(Ori, refractionDir), specularPower * T, depth - 1, data);
             }

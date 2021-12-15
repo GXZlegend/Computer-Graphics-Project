@@ -60,7 +60,7 @@ int main(int argc, char *argv[]) {
 
     for (int passId = 1; passId <= 100; ++passId) {
         std::cout << "Processing forward pass " << passId << std::endl;
-        ppmForward(baseGroup, lights, 1000000, imgView);
+        ppmForward(baseGroup, lights, 100000, imgView);
         for (int x = 0; x < camera->getWidth(); ++x) {
             for (int y = 0; y < camera->getHeight(); ++y) {
                 int offset = x * camera->getHeight() + y;
