@@ -11,7 +11,7 @@
 #include "tracer.hpp"
 
 const float ALPHA = 0.7;
-const float RADIUS = 0.3;
+const float RADIUS = 1;
 
 struct viewPoint {
     Vector3f radiance() {
@@ -129,12 +129,17 @@ void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector
     std::vector<Photon> photons;
     for (Light *&l: lights) {
         for (int rayId = 0; rayId < rayNum; ++rayId) {
-            std::pair<Ray, Vector3f> generation = l->generate();
-            Ray r = generation.first;
             if (rayId % 10000 == 0) {
                 std::cout << "rayId " << rayId << std::endl;
             }
+            std::pair<Ray, Vector3f> generation = l->generate();
+            Ray r = generation.first;
             Vector3f col = generation.second;
+            Photon origin;
+            origin.pos = r.getOrigin();
+            origin.dir = -r.getDirection();
+            origin.power = col;
+            photons.push_back(origin);
             std::vector<Trace> trace;
             traceRay(o, r, col, 20, trace);
             for (Trace &t: trace) {

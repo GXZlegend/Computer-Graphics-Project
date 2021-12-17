@@ -137,16 +137,15 @@ private:
     }
 
     Vector3f RandomDirection() const {
-        float x, y, z;
-        do {
-            x = 2.0 * rand() / RAND_MAX - 1;
-            y = 2.0 * rand() / RAND_MAX - 1;
-            z = 2.0 * rand() / RAND_MAX - 1;
-        } while (x * x + y * y + z * z > 1 || (x == 0 && y == 0 && z == 0));
-        if (z < 0) {
-            z = -z;
-        }
-        return (x * axisX + y * axisY + z * axisZ) / Vector3f(x, y, z).length();
+        // p(theta) = sin(2 * theta)
+        // t = - cos(2 * theta)  ->  p(t) = 0.5, -1 <= t <= 1
+        float t = 2.0 * rand() / RAND_MAX - 1;
+        float theta = -acos(t) / 2;
+        float phi = 2 * acos(-1) * rand() / RAND_MAX;
+        float x = sin(theta) * cos(phi);
+        float y = sin(theta) * sin(phi);
+        float z = cos(theta);
+        return x * axisX + y * axisY + z * axisZ;
     }
 
     Vector3f center;
