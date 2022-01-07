@@ -69,6 +69,8 @@ public:
     }
 
     virtual Ray generateRay(const Vector2f &point) override {
+        Vector2f newPoint(point[0] + 1.0 * rand() / RAND_MAX - 0.5,
+                          point[1] + 1.0 * rand() / RAND_MAX - 0.5);
         Ray r = PerspectiveCamera::generateRay(point);
         Vector3f objPoint = depth / Vector3f::dot(r.getDirection(), direction) * r.getDirection();
         Vector3f newCenter = randomCenter();

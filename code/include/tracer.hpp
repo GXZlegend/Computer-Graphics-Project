@@ -19,7 +19,17 @@ struct Trace {
     Material *material;
 };
 
-void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<Trace> &data) {
+Vector3f randomDiffuse(const Vector3f &normal) {
+    Vector3f dir;
+    do {
+        dir[0] = 2.0 * rand() / RAND_MAX - 1;
+        dir[1] = 2.0 * rand() / RAND_MAX - 1;
+        dir[2] = 2.0 * rand() / RAND_MAX - 1;
+    } while (dir.squaredLength() > 1 || Vector3f::dot(dir, normal) <= 0);
+    return dir.normalized();
+}
+
+void traceRay(Object3D *o, const Ray &r, const Vector3f &power, int depth, std::vector<Trace> &data, bool sampleDiffuse) {
     if (depth > 0) {
         Hit h;
         bool flag = o->intersect(r, h, minTime);
@@ -35,6 +45,12 @@ void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<
                 t.normal = h.getNormal();
                 t.material = h.getMaterial();
                 data.push_back(t);
+                if (sampleDiffuse && rand() < RAND_MAX * 0.5) {
+                    // Diffuse
+                    Vector3f dir = randomDiffuse(h.getNormal());
+                    Ray diffuseRay(Ori, dir);
+                    traceRay(o, diffuseRay, diffusePower, depth - 1, data, sampleDiffuse);
+                }
             }
             if (specularPower.length() > minPower) {
                 float cosI = Vector3f::dot(r.getDirection(), h.getNormal());
@@ -51,7 +67,7 @@ void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<
                     sinR = sinI * h.getMaterial()->refraction;
                     if (sinR > 1) {
                         // Total reflection
-                        traceRay(o, Ray(Ori, reflectionDir), specularPower, depth - 1, data);
+                        traceRay(o, Ray(Ori, reflectionDir), specularPower, depth - 1, data, sampleDiffuse);
                     }
                 }
                 float cosR = sqrt(1 - sinR * sinR);
@@ -60,17 +76,8 @@ void traceRay(Object3D *o, const Ray &r, Vector3f power, int depth, std::vector<
                 float sqrtRs = (cosI * sinR - sinI * cosR) / (cosI * sinR + sinI * cosR);
                 float sqrtRp = (cosI * cosR - sinI * sinR) / (cosI * cosR + sinI * sinR);
                 float R = (sqrtRs * sqrtRs + sqrtRp * sqrtRp) / 2, T = 1 - R;
-                if (R < 0 || T < 0) {
-                    std::cout << "fuck" << std::endl;
-                    std::cout << cosI << std::endl;
-                    std::cout << sinI << std::endl;
-                    std::cout << cosR << std::endl;
-                    std::cout << sinR << std::endl;
-                    std::cout << sqrtRs << std::endl;
-                    std::cout << sqrtRp << std::endl;
-                }
-                traceRay(o, Ray(Ori, reflectionDir), specularPower * R, depth - 1, data);
-                traceRay(o, Ray(Ori, refractionDir), specularPower * T, depth - 1, data);
+                traceRay(o, Ray(Ori, reflectionDir), specularPower * R, depth - 1, data, sampleDiffuse);
+                traceRay(o, Ray(Ori, refractionDir), specularPower * T, depth - 1, data, sampleDiffuse);
             }
         }
     }

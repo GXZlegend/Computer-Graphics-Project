@@ -21,8 +21,6 @@ public:
                 exit(0);
             }
         }
-        box.v[1][0] = box.v[1][2] = std::max(-box.v[0][0], box.v[1][0]);
-        box.v[0][0] = box.v[0][2] = -box.v[1][0];
     }
 
     ~RevSurface() override {

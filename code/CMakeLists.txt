@@ -19,7 +19,6 @@ SET(PJ_INCLUDES
         include/group.hpp
         include/hit.hpp
         include/image.hpp
-        include/kdtree.hpp
         include/light.hpp
         include/material.hpp
         include/mesh.hpp
@@ -31,6 +30,7 @@ SET(PJ_INCLUDES
         include/revsurface.hpp
         include/scene_parser.hpp
         include/sphere.hpp
+        include/sppm.hpp
         include/tracer.hpp
         include/transform.hpp
         include/triangle.hpp

@@ -18,15 +18,6 @@ public:
 		vertices[1] = b;
 		vertices[2] = c;
         normal = Vector3f::cross(b - a, c - a).normalized();
-		box.v[0] = Vector3f(std::min(std::min(a[0], b[0]), c[0]),
-					    	std::min(std::min(a[1], b[1]), c[1]),
-					    	std::min(std::min(a[2], b[2]), c[2]));
-		box.v[1] = Vector3f(std::max(std::max(a[0], b[0]), c[0]),
-						 	std::max(std::max(a[1], b[1]), c[1]),
-						 	std::max(std::max(a[2], b[2]), c[2]));
-		if (box.v[0][0] == box.v[1][0]) box.v[1][0] += 1e-2;
-		if (box.v[0][1] == box.v[1][1]) box.v[1][1] += 1e-2;
-		if (box.v[0][2] == box.v[1][2]) box.v[1][2] += 1e-2;
 	}
 
 	bool intersect( const Ray& ray,  Hit& hit , float tmin) override {

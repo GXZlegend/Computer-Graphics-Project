@@ -21,12 +21,7 @@ protected:
     std::vector<Vector3f> controls;
 public:
     explicit Curve(std::vector<Vector3f> points) : controls(std::move(points)) {
-        for (int controlId = 0; controlId < (int) controls.size(); ++controlId) {
-            for (int dim = 0; dim < 3; ++dim) {
-                box.v[0][dim] = std::min(box.v[0][dim], controls[controlId][dim]);
-                box.v[1][dim] = std::max(box.v[1][dim], controls[controlId][dim]);
-            }
-        }
+        
     }
 
     bool intersect(const Ray &r, Hit &h, float tmin) override {

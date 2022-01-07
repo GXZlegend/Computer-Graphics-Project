@@ -1,5 +1,5 @@
-#ifndef PPM_H
-#define PPM_H
+#ifndef SPPM_H
+#define SPPM_H
 
 #include <cmath>
 #include <vector>
@@ -10,14 +10,20 @@
 #include "photon.hpp"
 #include "tracer.hpp"
 
+const float NUM = 50;
 const float ALPHA = 0.7;
-const float RADIUS = 0.1;
+const float RADIUS = 0.5;
 
 struct viewPoint {
+    viewPoint() {
+        power = Vector3f::ZERO;
+        num = NUM;
+        alpha = ALPHA;
+        radius = RADIUS;
+    }
     Vector3f radiance() {
         return power / (acos(-1.0) * radius * radius * num);
     }
-    Trace trace;
     Vector3f power;
     float num;
     float alpha;
@@ -101,32 +107,7 @@ private:
     Photon photon;
 };
 
-void ppmBackward(Object3D *o, Camera *camera, int spp, std::vector<std::vector<viewPoint>> &imgView) {
-    for (int x = 0; x < camera->getWidth(); ++x) {
-        std::cout << "Line " << x << std::endl;
-        for (int y = 0; y < camera->getHeight(); ++y) {
-            std::vector<Trace> trace;
-            std::vector<viewPoint> view;
-            for (int sppId = 0; sppId < spp; ++sppId) {
-                Ray r = camera->generateRay(Vector2f(x, y));
-                traceRay(o, r, Vector3f(1.0 / spp), 20, trace);
-            }
-            for (Trace &t: trace) {
-                viewPoint point;
-                point.trace = t;
-                point.power = Vector3f::ZERO;
-                point.num = 0;
-                point.alpha = ALPHA;
-                point.radius = RADIUS;
-                view.push_back(point);
-            }
-            imgView.push_back(view);
-        }
-    }
-}
-
-void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector<std::vector<viewPoint>> &imgView) {
-    std::vector<Photon> photons;
+void sppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector<Photon> &photons) {
     for (Light *&l: lights) {
         for (int rayId = 0; rayId < rayNum; ++rayId) {
             if (rayId % (rayNum / 10) == 0) {
@@ -138,55 +119,66 @@ void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector
             Photon origin;
             origin.pos = r.getOrigin();
             origin.dir = -r.getDirection();
-            origin.power = col;
+            origin.power = col * 10;
             photons.push_back(origin);
             std::vector<Trace> trace;
-            traceRay(o, r, col, 20, trace);
+            traceRay(o, r, col, 20, trace, true);
             for (Trace &t: trace) {
                 photons.push_back(t.photon);
             }
         }
     }
     std::cout << photons.size() << " photons in total." << std::endl;
+}
+
+void sppmBackward(Object3D *o, Camera *camera, int spp, std::vector<Photon> &photons, std::vector<viewPoint> &imgView) {
     PhotonKDTree *root = new PhotonKDTree;
     root->build(photons.begin(), photons.end(), 0);
-    for (int viewId = 0; viewId < (int) imgView.size(); ++viewId) {
-        if (viewId % ((int) imgView.size() / 100) == 0) {
-            std::cout << "View " << viewId << std::endl;
-        }
-        for (viewPoint &point: imgView[viewId]) {
-            std::vector<Photon> photon;
-            root->collect(point.trace.photon.pos, point.radius, photon);
-            int m = (int) photon.size();
-            Vector3f power = Vector3f::ZERO;
-            for (Photon &p: photon) {
-                power += point.trace.photon.power
-                       * point.trace.material->Shade(point.trace.photon.dir, p.dir, point.trace.normal, p.power);
-                if (power[0] < 0 || power[1] < 0 || power[2] < 0) {
-                    std::cout << "fuck" << std::endl;
+    bool firstPass = imgView.empty();
+    for (int x = 0; x < camera->getWidth(); ++x) {
+        for (int y = 0; y < camera->getHeight(); ++y) {
+            int offset = x * camera->getHeight() + y;
+            if (offset % (camera->getWidth() * camera->getHeight() / 10) == 0) {
+                std::cout << "viewId " << offset << std::endl;
+            }
+            int addNum = 0;
+            Vector3f addPower = Vector3f::ZERO;
+            if (firstPass) {
+                imgView.push_back(viewPoint());
+            }
+            std::vector<Trace> trace;
+            for (int sppId = 0; sppId < spp; ++sppId) {
+                Ray r = camera->generateRay(Vector2f(x, y));
+                traceRay(o, r, Vector3f(1.0 / spp), 5, trace, false);
+            }
+            for (Trace &t: trace) {
+                std::vector<Photon> collected;
+                root->collect(t.photon.pos, imgView[offset].radius, collected);
+                addNum += collected.size();
+                for (Photon &p: collected) {
+                    addPower += t.photon.power * t.material->Shade(t.photon.dir, p.dir, t.normal, p.power);
                 }
             }
-            float n_prime = point.num + point.alpha * m;
-            float r_prime = point.radius;
-            Vector3f power_prime = point.power + power;
-            if (point.num + m > 0) {
-                r_prime *= sqrt(n_prime / (point.num + m));
-                power_prime *= n_prime / (point.num + m);
+            float n_prime = imgView[offset].num + imgView[offset].alpha * addNum;
+            float r_prime = imgView[offset].radius;
+            Vector3f power_prime = imgView[offset].power + addPower;
+            if (addNum > 0) {
+                r_prime *= sqrt(n_prime / (imgView[offset].num + addNum));
+                power_prime *= n_prime / (imgView[offset].num + addNum);
             }
-            point.num = n_prime;
-            point.radius = r_prime;
-            point.power = power_prime;
+            imgView[offset].num = n_prime;
+            imgView[offset].radius = r_prime;
+            imgView[offset].power = power_prime;
         }
     }
     delete root;
 }
 
-Vector3f getRadiance(std::vector<viewPoint> view) {
-    Vector3f radiance = Vector3f::ZERO;
-    for (viewPoint &point: view) {
-        radiance += point.radiance();
-    }
-    return radiance;
+void sppmPass(Object3D *o, std::vector<Light*> lights, int rayNum, 
+              Camera *camera, int spp, std::vector<viewPoint> &imgView) {
+    std::vector<Photon> photons;
+    sppmForward(o, lights, rayNum, photons);
+    sppmBackward(o, camera, spp, photons, imgView);
 }
 
-#endif // PPM_H
+#endif // SPPM_H

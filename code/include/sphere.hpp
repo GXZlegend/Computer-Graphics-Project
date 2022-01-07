@@ -11,15 +11,11 @@ public:
     Sphere() {
         center = Vector3f::ZERO;
         radius = 1;
-        box.v[0] = Vector3f(-1);
-        box.v[1] = Vector3f(1);
     }
 
     Sphere(const Vector3f &c, float r, Material *m) : Object3D(m) {
         center = c;
         radius = r;
-        box.v[0] = c - r;
-        box.v[1] = c + r;
     }
 
     ~Sphere() override = default;
