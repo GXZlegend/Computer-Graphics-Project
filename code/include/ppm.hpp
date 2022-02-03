@@ -11,7 +11,7 @@
 #include "tracer.hpp"
 
 const float ALPHA = 0.7;
-const float RADIUS = 0.1;
+const float RADIUS = 0.3;
 
 struct viewPoint {
     Vector3f radiance() {
@@ -104,12 +104,13 @@ private:
 void ppmBackward(Object3D *o, Camera *camera, int spp, std::vector<std::vector<viewPoint>> &imgView) {
     for (int x = 0; x < camera->getWidth(); ++x) {
         std::cout << "Line " << x << std::endl;
+        #pragma omp parallel for schedule(dynamic, 128), num_threads(8)
         for (int y = 0; y < camera->getHeight(); ++y) {
             std::vector<Trace> trace;
             std::vector<viewPoint> view;
             for (int sppId = 0; sppId < spp; ++sppId) {
                 Ray r = camera->generateRay(Vector2f(x, y));
-                traceRay(o, r, Vector3f(1.0 / spp), 20, trace);
+                traceRay(o, r, Vector3f(1.0 / spp), 5, trace, false);
             }
             for (Trace &t: trace) {
                 viewPoint point;
@@ -127,21 +128,19 @@ void ppmBackward(Object3D *o, Camera *camera, int spp, std::vector<std::vector<v
 
 void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector<std::vector<viewPoint>> &imgView) {
     std::vector<Photon> photons;
+    #pragma omp parallel for schedule(dynamic, 60), num_threads(8)
     for (Light *&l: lights) {
         for (int rayId = 0; rayId < rayNum; ++rayId) {
-            if (rayId % (rayNum / 10) == 0) {
-                std::cout << "rayId " << rayId << std::endl;
-            }
             std::pair<Ray, Vector3f> generation = l->generate();
             Ray r = generation.first;
             Vector3f col = generation.second;
             Photon origin;
             origin.pos = r.getOrigin();
             origin.dir = -r.getDirection();
-            origin.power = col;
+            origin.power = col * 10;
             photons.push_back(origin);
             std::vector<Trace> trace;
-            traceRay(o, r, col, 20, trace);
+            traceRay(o, r, col, 5, trace, true);
             for (Trace &t: trace) {
                 photons.push_back(t.photon);
             }
@@ -149,9 +148,10 @@ void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector
     }
     std::cout << photons.size() << " photons in total." << std::endl;
     PhotonKDTree *root = new PhotonKDTree;
-    root->build(photons.begin(), photons.end(), 0);
+    root->build(photons.begin(), photons.end(), 0);    
+    #pragma omp parallel for schedule(dynamic, 128), num_threads(8)
     for (int viewId = 0; viewId < (int) imgView.size(); ++viewId) {
-        if (viewId % ((int) imgView.size() / 100) == 0) {
+        if (viewId % (imgView.size() / 100) == 0) {
             std::cout << "View " << viewId << std::endl;
         }
         for (viewPoint &point: imgView[viewId]) {
@@ -162,9 +162,6 @@ void ppmForward(Object3D *o, std::vector<Light*> lights, int rayNum, std::vector
             for (Photon &p: photon) {
                 power += point.trace.photon.power
                        * point.trace.material->Shade(point.trace.photon.dir, p.dir, point.trace.normal, p.power);
-                if (power[0] < 0 || power[1] < 0 || power[2] < 0) {
-                    std::cout << "fuck" << std::endl;
-                }
             }
             float n_prime = point.num + point.alpha * m;
             float r_prime = point.radius;

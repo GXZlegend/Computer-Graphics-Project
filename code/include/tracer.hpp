@@ -45,7 +45,7 @@ void traceRay(Object3D *o, const Ray &r, const Vector3f &power, int depth, std::
                 t.normal = h.getNormal();
                 t.material = h.getMaterial();
                 data.push_back(t);
-                if (sampleDiffuse && rand() < RAND_MAX * 0.5) {
+                if (sampleDiffuse && rand() < RAND_MAX * 0.2) {
                     // Diffuse
                     Vector3f dir = randomDiffuse(h.getNormal());
                     Ray diffuseRay(Ori, dir);

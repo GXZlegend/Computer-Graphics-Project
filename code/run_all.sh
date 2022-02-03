@@ -23,6 +23,7 @@ mkdir -p output
 # bin/PJ testcases/scene06_bunny_1k.txt output/scene06.bmp
 # bin/PJ testcases/scene07_shine.txt output/scene07.bmp
 # bin/PJ testcases/scene08_core.txt output/scene08.bmp
-bin/PJ testcases/scene09_norm.txt output/scene09.bmp
-bin/PJ testcases/scene10_wineglass.txt output/scene10.bmp
+# bin/PJ testcases/scene09_norm.txt output/scene09.bmp
+# bin/PJ testcases/scene10_wineglass.txt output/scene10.bmp
 
+bin/PJ testcases/myscene_final.txt output/final

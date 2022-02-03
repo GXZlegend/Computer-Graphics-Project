@@ -1,0 +1,132 @@
+
+LensCamera {
+    center -12 0 0
+    direction 1 0 0
+    up 0 0 1
+    angle 60
+    width 640
+    height 640
+    radius 0.1
+    depth 10
+}
+
+Lights {
+    numLights 1
+    AreaLight {
+        center 0 0 5
+        z 0 0 -1
+        x 1 0 0
+        y 0 1 0
+        wx 2
+        wy 2
+        color 0.03 0.03 0.03
+    }
+}
+
+Materials {
+    numMaterials 5
+    PhongMaterial {
+        diffuseColor 1 1 1
+        specularColor 0 0 0
+        shininess 1
+        specularRatio 0
+        refraction 1
+    }
+    PhongMaterial {
+        diffuseColor 0.902 0.722 0.686
+        specularColor 0 0 0
+        shininess 1
+        specularRatio 0
+        refraction 1
+    }
+    PhongMaterial {
+        diffuseColor 0.290 0.525 0.910
+        specularColor 0 0 0
+        shininess 1
+        specularRatio 0
+        refraction 1
+    }
+    PhongMaterial {
+        diffuseColor 0.0 0.0 0.0
+        specularColor 1.0 1.0 1.0
+        shininess 1
+        specularRatio 1
+        refraction 1.5
+    }
+    PhongMaterial {
+	  diffuseColor 0.9 0.9 1
+	  specularColor 0.7 0.7 0.7
+	  shininess 20
+      specularRatio 0
+      refraction 1
+	}
+}
+
+Background {
+    color 0 0 0 
+}
+
+Group {
+    numObjects 9
+    MaterialIndex 0
+    Plane {
+        normal 0 0 1
+        offset -5
+    }
+    MaterialIndex 0
+    Plane {
+        normal 0 0 -1
+        offset -5
+    }
+    MaterialIndex 0
+    Plane {
+        normal -1 0 0
+        offset -5
+    }
+    MaterialIndex 0
+    Plane {
+        normal 1 0 0
+        offset -15
+    }
+    MaterialIndex 1
+    Plane {
+        normal 0 -1 0
+        offset -5
+    }
+    MaterialIndex 2
+    Plane {
+        normal 0 1 0
+        offset -5
+    }
+    MaterialIndex 4
+    Transform {
+        Translate 2 2 -2
+        YRotate -90
+        Scale 0.5 1 0.5
+        RevSurface {
+            profile BezierCurve {
+                controls
+                    [ -2 3 0 ]
+                    [ -4 1 0 ]
+                    [ 0 0 0 ]
+                    [ -2 -2 0 ]
+            }
+        }
+    }
+    MaterialIndex 3
+    Transform {
+        Translate -1 -1 -1
+        Scale  0.04 0.04 0.04
+        YRotate -9
+        ZRotate -90
+        Translate  -90 -170 -50
+        TriangleMesh {
+            obj_file mesh/frostmourne.obj
+        }
+    }
+    MaterialIndex 3
+    Sphere {
+        center -3 3 -4
+        radius 1
+    }
+}

@@ -1,4 +1,5 @@
 #include "mesh.hpp"
+#include "kdtree.hpp"
 #include <fstream>
 #include <iostream>
 #include <algorithm>
@@ -7,7 +8,9 @@
 #include <sstream>
 
 bool Mesh::intersect(const Ray &r, Hit &h, float tmin) {
-
+    if (root) {
+        return root->intersect(r, h, tmin);
+    }
     bool result = false;
     for (int triId = 0; triId < (int) t.size(); ++triId) {
         TriangleIndex& triIndex = t[triId];
@@ -76,4 +79,15 @@ Mesh::Mesh(const char *filename, Material *material) : Object3D(material) {
         }
     }
     f.close();
+    buildKDTree();
+}
+
+void Mesh::buildKDTree() {
+    root = new KDTree(this);
+    std::vector<int> triId;
+    for (int i = 0; i < (int) t.size(); ++i) {
+        triId.push_back(i);
+    }
+    root->getBox(triId);
+    root->build(triId, (int) (8 * log(t.size() + 1.3)), 0);
 }

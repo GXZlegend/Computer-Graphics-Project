@@ -11,7 +11,7 @@
 #include "camera.hpp"
 #include "group.hpp"
 #include "light.hpp"
-#include "sppm.hpp"
+#include "ppm.hpp"
 
 #include <string>
 
@@ -51,17 +51,18 @@ int main(int argc, char *argv[]) {
     // Set image
     Image img(camera->getWidth(), camera->getHeight());
 
-    // Initialize SPPM grid
-    std::vector<viewPoint> imgView;
+    // Initialize PPM grid
+    std::vector<std::vector<viewPoint>> imgView;
+    ppmBackward(baseGroup, camera, 8, imgView);
 
     // SPPM Pass
-    for (int passId = 1; passId <= 10000; ++passId) {
-        std::cout << "SPPM pass " << passId << std::endl;
-        sppmPass(baseGroup, lights, 200000, camera, 8, imgView);
+    for (int passId = 1; passId <= 2500; ++passId) {
+        std::cout << "PPM pass " << passId << std::endl;
+        ppmForward(baseGroup, lights, 200000, imgView);
         for (int x = 0; x < camera->getWidth(); ++x) {
             for (int y = 0; y < camera->getHeight(); ++y) {
                 int offset = x * camera->getHeight() + y;
-                img.SetPixel(x, y, imgView[offset].radiance());
+                img.SetPixel(x, y, getRadiance(imgView[offset]));
             }
         }
         img.SaveImage((outputFile + std::to_string(passId) + ".bmp").c_str());
