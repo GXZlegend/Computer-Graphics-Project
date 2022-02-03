@@ -4,11 +4,14 @@
 
 ## 图像结果
 
-![](result.bmp)
+![result](/result.bmp)
 
 ## 运行方式
 
-`bash run_all.sh`
+```plain
+cd code
+bash run_all.sh
+```
 
 ## 实现简述
 
